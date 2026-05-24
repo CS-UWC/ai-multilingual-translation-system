@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset= "UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Student Translator</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        :root {--primary: #2563eb;--bg: #f3f4f6; --card: #ffffff; --text:#1f2937;--banner: #1e3a8a;--red: #ef4444; --green:#22c55e;}
+        .dark-mode {--bg: #111827;--card: #1f2937;--text:#f9fafb;--primary: #60a5fa; --banner: #000000;}
+
+        body{font-family: 'Inter', sans-serif;background: var(--bg);color: var(--text); 
+               display:flex;flex-direction: column; align-items: center; min-height: 100vh;margin:0; transition:0.3s;}
+        
+        .uwc-banner {width: 100%; background: var(--banner);color:white;padding: 15px 0; 
+                      text-align: center; font-weight: 800;letter-spacing:1px; font-size:1.1rem;box-shadow: 0 2px 10px rgba(0,0,0,0.2);}
+        .container {background:var(--card);padding: 2.5rem;border-radius: 24px;box-shadow: 0 10px 40px rgba(0,0,0,0.08); 
+                    width: 90%;max-width:650px; text-align:center; position: relative;margin-top: 40px;}
+        .top-bar {position: absolute;top:20px;right: 20px; display:flex; gap:12px; }
+        .icon-btn{background:var(--card); border: none; width:42px;height:42px;border-radius: 50%; 
+                    cursor:pointer;box-shadow: 0 4px 10px rgba(0,0,0,0.1);font-size:1.1rem;color:var(--text); 
+                    display:flex; align-items: center; justify-content: center; }
+
+        .status-container{display: flex; align-items: center;justify-content:center; gap: 8px;margin-bottom:15px;font-size:0.85rem;font-weight:600;}
+        .dot{width:8px;height:8px;border-radius:50%; background: var(--red);}
+        .dot.active{background:var(--green); box-shadow: 0 0 8px var(--green);animation:pulse 1.5s infinite;}
+        @keyframes pulse { 0% { opacity: 1;}50%{opacity: 0.4;} 100%{ opacity: 1;}}
+        .lang-header{margin-bottom: 25px; text-align: left; }
+        .lang-select{width: 100%;padding:12px;border-radius:12px; border: 2px solid var(--primary); 
+                       background: var(--card); color: var(--text);font-weight:600;cursor:pointer; }
+
+        .display-box{background:rgba(0,0,0,0.02);padding:1.5rem;border-radius:18px;margin: 12px 0; text-align: left; border: 1px solid rgba(0,0,0,0.05);   }
+        .dark-mode .display-box {background: rgba(255,255,255,0.03);}
+        .label{font-size: 0.75rem;font-weight: 700;text-transform: uppercase;opacity: 0.6; margin-bottom:8px; display: block; }
+        .translated-text {color:var(--primary); font-size: 1.7rem; font-weight:700;line-height:1.4;margin: 0;}
+
+        
+        .audio-bar {margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1);display:grid;grid-template-columns: 1fr 1fr; gap: 20px;text-align: left;}
+        input[type="range"]{width:100%; accent-color:  var(--primary);   }
+        #settingsModal{display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%;height: 100%; 
+                         background: rgba(0,0,0,0.4); backdrop-filter:blur(8px); }
+        .modal-content{background: var(--card); margin:15vh auto;padding:2rem;border-radius:20px;width:85%; max-width:350px;}
+        .close-btn {background:var(--primary);  color:white; border: none;  padding:12px; width:100%; border-radius:12px; cursor:pointer;font-weight: bold; margin-top: 15px;}
+        
+    </style>
+    
+</head>
+    
+<body>
+
+<div class="uwc-banner">UWC AI BASED MULTILINGUAL TRANSLATION SYSTEM</div>
+
+<div class="container">
+    <div class ="top-bar">
+        <button class="icon-btn" onclick = "toggleSettings()">⚙️</button>
+        <button class= "icon-btn" id = "darkBtn">🌙</button>
+    </div>
+    <div class="status-container">
+        <div id ="statusDot" class="dot"></div>
+        <span id ="statusText">System Idle</span>
+    </div>
+    <div class="lang-header">
+        <span class = "label">Translate to:</span>
+        <select id="langSelect" class="lang-select">
+            <option value= "zu">isiZulu</option>
+            <option value ="xh">isiXhosa</option>
+            <option value=  "af">Afrikaans</option>
+        </select>
+    </div>
+
+    <div class= "display-box">
+        <span class ="label">Lecturer(English) </span>
+        <p id="english" style="font-size:1.1rem;margin:0; opacity:0.8;">Waiting for lecture to begin...</p>
+    </div>
+
+
+
+    <div class="display-box">
+        <span class = "label">Translation</span>
+        <p  id="translated" class="translated-text">...</p>
+    </div>
+
+    <div class= "audio-bar">
+        <div>
+            <label class ="label">Volume</label>
+            <input type="range"id="vol" min = "0" max="1" step="0.1" value ="0.8">
+        </div>
+        <div>
+            <label class= "label">Reading Speed</label>
+            <input type = "range" id = "rate" min="0.5" max="1.5" step="0.1" value= "1">
+        </div>
+    </div>
+    
+</div>
+
+<div id =  "settingsModal">
+    <div class="modal-content">
+        
+        <h3>Preferences</h3>
+        <label style="display: flex;align-items: center;gap: 10px;cursor: pointer;">
+            <input type = "checkbox" id="voiceToggle"> 
+            <span>Enable Voice Output</span>
+        </label>
+        <button class= "close-btn" onclick="toggleSettings()">Save & Close</button>
+    </div>
+</div>
+
+<script>
+    
+    const socket =io();
+    const modal = document.getElementById("settingsModal");
+    const statusDot = document.getElementById("statusDot");
+    const statusText =document.getElementById("statusText");
+
+    function toggleSettings(){modal.style.display = (modal.style.display ==="block")?"none":  "block";}
+    socket.on("connect",()=>{
+        statusDot.classList.add("active");
+        statusText.innerText = "System Active";
+        statusText.style.color = "var(--green)";
+    });
+    socket.on("disconnect", ()=> {
+        statusDot.classList.remove("active");
+        statusText.innerText ="System Idle";
+        statusText.style.color = "var(--red)";
+    });
+
+    socket.on("process_translation",(data) =>{
+        socket.emit("request_translation",{
+            text: data.english,
+            
+            language: document.getElementById("langSelect").value
+        });
+    });
+
+    socket.on("receive_translation",(data) => {
+        document.getElementById("english").innerText =data.english;
+        document.getElementById("translated").innerText= data.translated;
+        if(document.getElementById("voiceToggle").checked) speak(data.translated);
+    });
+
+    function speak(text){
+        window.speechSynthesis.cancel();
+        const msg =new SpeechSynthesisUtterance(text);
+        msg.volume= document.getElementById("vol").value;
+        msg.rate = document.getElementById("rate").value;
+        msg.lang = document.getElementById("langSelect").value;
+        window.speechSynthesis.speak(msg);
+    }
+
+    
+    document.getElementById("darkBtn").onclick = () => document.body.classList.toggle("dark-mode");
+</script>
+</body>
+    
+</html>
