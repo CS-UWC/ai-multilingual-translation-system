@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <title>Lecturer Panel</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        body {font-family: 'Inter', sans-serif; background: #f3f4f6; 
+               display: flex; flex-direction: column; align-items: center; min-height: 100vh;margin: 0;}
+        .uwc-banner { width: 100%;background:#1e3a8a; color: white; padding:15px 0; 
+                      text-align: center; font-weight: 800;letter-spacing: 1px; font-size: 1.1rem; }
+        .container{background: white; padding: 3rem; border-radius: 25px;box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+                    width: 90%; max-width: 500px;text-align: center; margin-top:50px; }
+        .mic-btn{width: 100px;height: 100px; border-radius: 50%; border: none;cursor:pointer; 
+                   font-size: 2.5rem; margin: 20px; transition: 0.3s; background:#e5e7eb; }
+        .active {background: #ef4444; color:white; box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);transform: scale(1.1); }
+        
+        .status-text{ font-weight: bold; color: #4b5563; font-size: 1.2rem; }
+        .preview { margin-top:25px;  padding: 1.5rem; background: #f9fafb;border-radius: 15px;border:1px solid #e5e7eb; color: #1e3a8a;font-style:italic;min-height: 60px; }
+    </style>
+</head>
+<body>
+
+<div class="uwc-banner">UWC AI BASED MULTILINGUAL TRANSLATION SYSTEM</div>
+<div class="container">
+    <h1>Lecturer Control</h1>
+    <p class="status-text" id="status">Ready to Start</p>
+    <button id="micBtn" class=  "mic-btn">🎙️</button>
+    <div class="preview" id="preview">Your speech will appear here...</div>
+</div>
+
+    
+<script>
+    const socket= io();
+    const micBtn = document.getElementById("micBtn");
+    const status = document.getElementById("status");
+    const preview =document.getElementById("preview");
+
+    const recognition = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.continuous =true;
+    recognition.interimResults =true;
+    let isRecording= false;
+
+    micBtn.onclick = () => {
+        if (!isRecording){
+            recognition.start();
+            micBtn.classList.add("active");
+            status.innerText = "Broadcasting Live...";
+            isRecording = true;
+        } 
+        else {
+            recognition.stop();
+            micBtn.classList.remove("active");
+            status.innerText = "Microphone Off";
+            isRecording = false;
+        }
+    };
+
+    
+    recognition.onresult = (event) => {
+        const result = event.results[event.results.length -1];
+        const transcript= result[0].transcript;
+        preview.innerText = transcript;
+        if (result.isFinal){
+            socket.emit("send_text", { text: transcript });
+        }
+    };
+
+    recognition.onend = () =>{ if(isRecording) recognition.start(); };
+</script>
+</body>
+
+    
+</html>
