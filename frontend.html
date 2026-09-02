@@ -1,0 +1,1686 @@
+
+<!-- 4261579 -->
+<!-- Frontend: HTML -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name= "viewport" content="width=device-width, initial-scale=1.0">
+    <title>UWC AI Lecture Translation System</title>
+    <style>
+        :root{ 
+            --blue: #1e3a8a; 
+            --gold: #f59e0b; 
+            --green: #10b981; 
+            --red: #ef4444;
+            --bg: #f3f4f6; 
+            --card: #ffffff; 
+            --text: #1f2937;
+            --muted: #4b5563;
+            --border: #e5e7eb;
+            --box: #f9fafb;
+            --size:16px;
+        }
+
+        [data-theme ="dark"]{
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --box: #0f172a;
+        }
+
+
+        *{box-sizing: border-box; }
+        body{ 
+            font-family:'Segoe UI',Tahoma,  Geneva, Verdana,sans-serif; 
+            background:var(--bg); 
+            margin:0; 
+            padding:0; 
+            transition:  all 0.3s ease; 
+            font-size: var(--size);
+            color:var(--text);
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+        }
+        
+        .header {
+            background:linear-gradient(135deg,var(--blue) 0%, #0d1b42 100%);
+            color: #fff;
+            padding:25px 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--gold);
+            box-shadow:0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .header h1{ margin: 0; font-size: 1.6rem; font-weight: 800;}
+        .header p{ margin: 5px 0 0; font-size: 0.9rem; color: #cbd5e1;}
+        
+        .top_bar{
+            max-width:950px;
+            margin:  20px auto 0;
+            width: 95%;
+            display:flex;
+            justify-content:  space-between;
+            align-items:center;
+            gap:15px;
+            flex-wrap:wrap;
+        }
+
+        .status_box{
+            background:var(--card);
+            padding:8px 16px;
+            border-radius:20px;
+            border:1px solid var(--border);
+            font-size:0.85rem;
+            font-weight:600;
+            color: var(--text);
+            display: flex;
+            align-items:center;
+            box-shadow:0 2px 5px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .status_dot   {
+            height: 10px;
+            width: 10px;
+            border-radius:50%;
+            margin-right:8px;
+            background: var(--red);
+            transition:background 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .status_dot_active{
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation:pulse 1.5s infinite;
+
+        }
+        @keyframes pulse {0%,100% {opacity:1;}50% {opacity:0.5;}}
+
+        .button_group{ 
+            display:flex; 
+            gap:10px; 
+            align-items:center;
+            flex-shrink:0;
+        }
+        
+
+        .button {
+            background:var(--card);
+            border:  1px solid var(--border);
+            color: var(--text);
+            padding:  8px 16px;
+            border-radius:6px;
+            cursor:pointer;
+            font-weight:600;
+            font-size:0.85rem;
+            transition:all 0.2s;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            white-space:nowrap;
+            height:40px;
+            min-width:120px;
+        }
+        
+        .button:hover{ 
+            background: var(--blue); 
+            color: white; 
+            border-color:var(--blue);}
+
+        .notification_wrapper{
+            position: relative;
+            display: inline-flex;}
+
+        .notification_badge{
+            position:absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--red);
+            color: white;
+            font-size:  0.65rem;
+            width:18px;
+            height:18px;
+            border-radius: 50%;
+            display: none;
+            align-items:  center;
+            justify-content:center;
+            font-weight:bold;
+            border: 2px solid var(--card);
+            z-index: 10;}
+
+
+
+        .notification_dropdown{
+            position:absolute;
+            top:48px;
+            right : 0;
+            width:320px;
+            background : var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display : none;
+            padding :10px;
+            max-height:250px;
+            overflow-y: auto;
+        }
+
+        .notification_item {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+            font-size:  0.8rem;
+            color:var(--text);
+        }
+        .notification_item:last-child{border-bottom: none;}
+        .notification_time{  font-size: 0.7rem;color: var(--muted);display: block;margin-top:3px;}
+
+        .application_shell{ 
+            background :var(--card); 
+            width:95%; 
+            max-width:950px; 
+            padding : 30px; 
+            border-radius:12px; 
+            box-shadow:0 5px 20px rgba(0,0,0,0.05); 
+            margin:15px auto;
+            border : 1px solid var(--border);
+            flex : 1;}
+        .panel{display:none;}
+        .panel_active{display :block;}
+
+
+        .settings_container{
+            background : var(--box) !important;
+            border: 1px solid #bfdbfe;
+            padding: 20px; 
+            border-radius:8px; 
+            margin-bottom:20px;
+        }
+        [data-theme="dark"] .settings_container{
+            border-color:var(--border);}
+        
+
+        .dashboard_grid{display: grid; grid-template-columns:repeat(3, 1fr); gap:20px;margin-top: 15px;}
+        @media (max-width: 768px){.dashboard_grid { grid-template-columns: 1fr;   }}
+        
+        .dashboard_card{
+            background: var(--box);
+            border: 2px solid var(--border);
+            padding: 25px;
+            border-radius:10px;
+            cursor: pointer;
+            text-align : center;
+            transition:all 0.25s ease;}
+        .dashboard_card:hover {border-color: var(--blue); transform:translateY(-2px);  }
+        .dashboard_card h3  { margin: 0 0 10px;color : var(--blue);  font-size:1.2rem;}
+        .dashboard_card p{color: var(--muted);margin:0; font-size:0.9em;}
+        .two_column_grid{display:grid;grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom:25px;}
+        .label  {font-size:  0.75em;  font-weight:bold;color:var(--muted); text-transform:uppercase; margin-bottom: 6px; display:block;letter-spacing:0.5px;}
+        select,button,input[type="file"]{
+
+            width:100%; 
+            padding:12px 16px; 
+            border-radius:8px; 
+            border:1px solid var(--border); 
+            font-size : 1em; 
+            outline:none; 
+            background:var(--card); 
+            color: var(--text);}
+        
+
+        .action_button{  font-weight:bold;cursor: pointer;  border:none;color: white;}
+        .action_button_green{background:var(--green);}
+        .action_button_green:hover{filter:brightness(0.9);   }
+        .action_button_red {background:var(--red); }
+        .action_button_red:hover {filter: brightness(0.9);}
+        .back_button{background:#6b7280;color:  white;border:none;margin-top:25px;padding:10px 20px;  font-size:0.85em;width: auto;cursor:   pointer;border-radius:6px;}
+        .output_grid{display: grid;grid-template-columns:1fr 1fr;gap: 20px;margin-top:15px;}
+        .display_box{background: var(--box);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:20px;
+            min-height:140px;}
+        .audio_controls{
+            background:var(--box);
+            border:1px solid var(--border);
+            border-radius:10px;
+            padding:15px 20px;
+            margin-top:20px;
+            display: grid;
+            grid-template-columns:repeat(4,1fr);
+            gap:20px;
+            align-items : center;}
+        .audio_controls .control_unit{display:flex; flex-direction:column;}
+        .audio_controls .label {font-size: 0.7em;margin-bottom: 4px;}
+        .audio_controls input[type="range"]{width: 100%;cursor: pointer;accent-color: var(--blue);}
+        .audio_value_display {font-size:0.75em; color:var(--muted);text-align:right;margin-top: 2px;}
+        .replay_button{ 
+            padding:8px; 
+            font-size:0.85em; 
+            font-weight : bold; 
+            background:var(--blue); 
+            color : white; 
+            border:none; 
+            border-radius:6px; 
+            cursor:pointer; 
+            height:100%; display: flex; 
+            align-items:center; 
+            justify-content:center; 
+        }
+        .replay_button:hover {background: #1e40af;}
+        .help_link{font-size: 0.85em;color: var(--gold); font-weight:bold; cursor: pointer; margin-left: auto; text-decoration:underline;display: inline-block;}
+        .help_link:hover{opacity: 0.8;}
+        
+        .help_panel{display:none ;margin-top:15px ;border-top:2px dashed var(--border);padding-top:15px;}
+        .help_panel_active {display:block;}
+        
+        .tutorial_container{
+            background:var(--card);
+            padding:15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;}
+        .progress_dots {display:flex ;justify-content:space-between ;  margin-top:10px;gap:5px;}
+        .progress_dot {flex-grow:1; height:6px; background:var(--border);border-radius:3px; transition:background 0.2s;}
+        .progress_dot_active {background: var(--blue);}
+        .qa_container { 
+            border:1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card);
+            margin-bottom:8px;
+            overflow:hidden;}
+        .qa_header{
+            padding:10px 14px;
+            background : var(--box);
+            cursor :pointer;
+            font-size:0.85em;
+            font-weight:bold;
+            display:flex;
+            justify-content:space-between;
+            align-items: center;
+        }
+        .qa_body{
+            padding : 12px 14px;
+            font-size:0.85em;
+            color:var(--muted);
+            display:none;
+            line-height:1.4;
+            border-top : 1px solid var(--border);}
+
+
+
+        .action_row {display:flex;  justify-content:space-between;align-items : center;margin-top :25px;flex-wrap:wrap; gap:10px;}
+        .download_button{ 
+            background:var(--green); 
+            color:white; 
+            font-weight:   bold; 
+            border:none; 
+            padding:10px 20px; 
+            font-size:0.85em; 
+            width : auto; 
+            cursor:pointer; 
+            border-radius:6px; 
+            display:flex; 
+            align-items:center; gap:8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+        .download_button:hover{filter:brightness(0.95);}
+        .loading_indicator {display: none; 
+            color: var(--gold);
+             font-weight: bold; margin: 15px 0; font-size: 0.9em; text-align: center;}
+        .scrollable_output{
+            max-height: 320px;
+            overflow-y: auto;
+            font-size: 0.95em;
+            line-height:1.6 !important;
+            text-align: left;
+            margin: 8px 0 0;
+            white-space: pre-wrap;
+            padding-right: 5px;}
+        .voice_quality_badge{
+            display:inline-block;
+            padding:2px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight:bold;
+            margin-left:8px;}
+        .voice_quality_good{background: var(--green);color: white;}
+
+
+        .voice_quality_ok{background: var(--gold);color:white;}
+        .voice_quality_bad   {background: var(--red); color:white;  }
+        .footer{
+            background: linear-gradient(135deg, var(--blue) 0%,#0d1b42 100%);
+            color: #fff;
+            padding: 15px 20px;
+            text-align: center;
+            border-top:5px solid var(--gold);
+            margin-top:auto;
+            font-size:0.85rem;}
+
+        .footer p {margin:2px 0;}
+        .footer .name {font-weight: bold; color: var(--gold);}
+        .footer .year { opacity: 0.8; }
+        .help_modal    {
+            display: none;
+            position: fixed;
+            top: 0;left: 0;
+            width: 100%;height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+
+
+        }
+        .help_modal_active{display: flex; }
+        .help_modal_content{
+            background:var(--card);
+            max-width:700px;
+            width:100%;
+            max-height:90vh;
+            overflow-y:auto;
+            padding:30px;
+            border-radius:12px;
+            border:2px solid var(--gold);
+            box-shadow:0 20px 60px rgba(0,0,0,0.3);
+            position : relative;
+        }
+        .help_modal_close{
+            position:absolute;
+            top:15px;right:20px;font-size:1.5rem;  cursor:pointer;
+            color:var(--muted);
+            background:none;
+            border:  none;
+            padding: 5px 10px;      }
+        .help_modal_close:hover {color:var(--red);}
+        .important_message{
+            background:#fef3c7;
+            border-left:4px solid var(--gold);
+            padding:12px 16px;
+            margin:12px 0;
+            border-radius:6px;
+            font-size:0.85em;color: #92400e;
+            display:flex;
+            align-items  : flex-start; gap: 10px;}
+        .important_message .icon{ font-size:1.2em;
+            flex-shrink: 0;
+            font-weight:   bold;
+        }
+
+
+        .important_message .content{line-height:1.5;}
+        .important_message.content strong{color: #78350f;}
+        .important_message.coming_soon  {
+            color:#dc2626;
+            font-weight:bold;}
+
+        [data-theme="dark"].important_message{
+            background:#1e293b;border-left-color: var(--gold);
+            color: #fcd34d;
+        }
+        [data-theme="dark"].important_message.content strong{
+            color: #fbbf24;}
+        [data-theme="dark"].important_message .coming_soon{
+            color: #ef4444;}
+
+        @media(max-width:768px)       {
+            .top_bar {flex-direction: column; align-items:  stretch; gap:10px;}
+            .button_group{justify-content:center;flex-wrap: wrap;}
+            .button {min-width : 100px; padding: 8px 12px; font-size: 0.8rem; height:36px;}
+            .audio_controls {grid-template-columns:1fr 1fr;    }
+            .two_column_grid{grid-template-columns: 1fr;}
+            .output_grid{grid-template-columns:1fr;}
+            .help_modal_content {padding: 20px;margin:10px;}}
+
+        @media(max-width: 480px){
+            .button  {min-width:80px;padding:6px 10px;font-size:0.7rem; height:32px;}
+            .status_box {font-size: 0.75rem; padding:6px 12px;}}
+
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>UWC AI MULTILINGUAL LECTURE TRANSLATION SYSTEM</h1>
+    <p>Department of Computer Science — Advancing AI in Education</p>
+</div>
+
+<div class="top_bar">
+    <div class="status_box">
+
+        <div id="statusIndicator" class="status_dot"></div>
+        <span id="statusText">Offline</span>
+    </div>
+    <div class= "button_group">
+        <button class= "button" onclick = "toggleDarkMode()">🌓 Dark</button>
+        <button class="button" onclick="toggleSettings()">⚙️ Settings</button>
+        <button class="button" onclick = "openHelpModal()">❓ Help</button>
+        
+        <div class = "notification_wrapper">
+            <button class="button"   onclick= "toggleNotifications()">
+                🔔 Notifs
+                <div id = "notificationBadge" class= "notification_badge">0</div>
+
+            </button>
+            <div id = "notificationDropdown" class= "notification_dropdown">
+                <div style="font-weight: bold;font-size : 0.85em;border-bottom: 1px solid var(--border);padding-bottom: 5px; margin-bottom:5px;color:var(--blue);">Notification History</div>
+                <div id= "notificationList">
+                    <div class = "notification_item" id= "emptyNotification" style="color: var(--muted); text-align: center; padding:10px 0;">No alerts</div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class= "application_shell">
+
+    
+    <div id= "settingsPanel" class= "panel settings_container">
+        <div style = "display: flex;align-items: center;margin-bottom: 12px; flex-wrap: wrap; gap:10px;">
+            <h4 style =  "margin:0; color:var(--blue);">Settings</h4>
+
+        </div>
+        
+        <div class="two_column_grid"   style= "margin-bottom:15px;">
+            <div>
+                <label class="label">Mic Sensitivity</label>
+                <select id="microphoneSensitivity">
+                    <option value="high">High</option>
+                    <option value = "low">Low</option>
+                </select>
+
+            </div>
+            <div>
+                <label class= "label">Font Size</label>
+                <select id="fontSizeSelector" onchange = "changeFontSize()">
+                    <option value= "14px">Small</option>
+                    <option value= "16px" selected>Normal</option>
+                    <option value= "18px">Medium</option>
+                    <option value= "22px">Large</option>
+                </select>
+
+            </div>
+        </div>
+
+        <button class= "button" style= "width:auto ; padding:6px 15px;margin-top: 15px;min-width: unset;"  onclick="toggleSettings()">Close</button>
+    </div>
+
+   
+    
+    <div id= "dashboardPanel" class= "panel panel_active">
+
+        <p style= "color:var(--muted) ; margin-top: 0;">Select your workspace:</p>
+        <div class = "dashboard_grid">
+
+            <div class= "dashboard_card" onclick= "openPanel('lecturerPanel')">
+                <div>
+                    <h3>Lecturer</h3>
+                    <p style="color:var(--muted); margin:0; font-size:0.9em;">Broadcast live lectures</p>
+                </div>
+            </div>
+
+
+            <div class= "dashboard_card" onclick= "openPanel('studentPanel')">
+                <div>
+                    <h3>Student</h3>
+                    <p style= "color:var(--muted); margin: 0; font-size:0.9em;">Join and translate lectures</p>
+                </div>
+            </div>
+
+            <div class = "dashboard_card" onclick="openPanel('mediaPanel')">
+                <div>
+                    <h3>Media</h3>
+                    <p style="color: var(--muted); margin: 0;font-size: 0.9em;">Upload files for processing</p>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    
+    <div id = "lecturerPanel"   class="panel">
+        <h3 style = "color:var(--blue); margin:0 0 5px;">Lecturer Console</h3>
+        <p style="color: var(--muted); margin: 0 0 20px; font-size: 0.9em;">Start broadcasting your lecture</p>
+        <div class= "two_column_grid" style = "grid-template-columns:2fr 1fr;">
+            <button class ="action_button action_button_green" onclick="startMicrophone()">Start Broadcast</button>
+            <button class= "action_button action_button_red" onclick="stopMicrophone()">Stop</button>
+        </div>
+
+
+        <div class= "display_box" style= "min-height:160px;">
+            <label class="label">Live Speech</label>
+            <p id= "liveSpeechDisplay" style="color:var(--muted); margin:10px 0 0; font-size:1.1em; line-height:1.5;">Microphone off...</p>
+        </div>
+
+        <button class = "back_button" onclick= "closeAllPanels()">Disconnect</button>
+
+    </div>
+
+    
+    
+    <div id = "studentPanel" class = "panel">
+
+        <h3 style="color: var(--blue); margin:0 0 15px;">Student Desk</h3>
+        <div class = "two_column_grid">
+
+            <div>
+
+                <label class= "label">Language</label>
+                <select id="languagePreference" onchange="updateVoiceQuality()">
+                    <option value="zu">isiZulu</option>
+                    <option value="xh">isiXhosa</option>
+                    <option value="af">Afrikaans</option>
+                    <option value="en">English</option>
+                </select>
+                <span id= "voiceQualityIndicator" class="voice_quality_badge voice_quality_good">Native</span>
+            </div>
+
+            <div>
+                <label class = "label">Output Mode</label>
+                <select id= "outputModeSelector">
+                    <option value= "both">Subtitles + Voice</option>
+                    <option value= "subs">Subtitles Only</option>
+                    <option value="tts">Voice Only</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class= "output_grid">
+            <div class= "display_box">
+                <label class="label">English (Original)</label>
+                <p id = "englishDisplay" style = "color:var(--muted); font-size:0.95em; margin:10px 0 0; line-height:1.4;">Connecting...</p>
+            </div>
+
+            <div class= "display_box">
+                <label class= "label" style= "color:var(--blue);">Translated</label>
+                <p id= "translationDisplay" style="color:var(--blue); font-size:1.1em; font-weight: bold; margin:10px 0 0; line-height: 1.4;">...</p>
+            </div>
+
+        </div>
+
+        <div class= "audio_controls">
+            <div class = "control_unit">
+
+                <label class = "label">Volume</label>
+                <input type= "range" id="volumeSlider" min="0"max="1"step="0.1"value= "1" oninput="updateAudioSettings()">
+                <div class="audio_value_display" id="volumeDisplay">100%</div>
+            </div>
+
+
+            <div class= "control_unit">
+                <label class = "label">Speed</label>
+                <input type = "range" id= "rateSlider" min= "0.5"max="2"step="0.1"value="1"oninput= "updateAudioSettings()">
+                <div class= "audio_value_display" id= "rateDisplay">1.0x</div>
+            </div>
+
+            <div class = "control_unit">
+                <label  class= "label">Pitch</label>
+                <input type="range" id="pitchSlider" min="0.5"max="1.5" step="0.1" value="1" oninput="updateAudioSettings()">
+                <div class= "audio_value_display" id= "pitchDisplay">1.0</div>
+            </div>
+            
+            <div class= "control_unit" style= "justify-content:flex-end;">
+                <button class = "replay_button" onclick = "replayAudio()">Replay</button>
+
+            </div>
+        </div>
+
+
+        <div class= "action_row">
+
+            <button class= "back_button" style="margin-top:0;" onclick="closeAllPanels()">Leave</button>
+            <button class="download_button" onclick= "downloadTranscriptPDF()">Download PDF</button>
+        </div>
+    </div>
+
+    
+
+    <div id= "mediaPanel" class="panel">
+        <h3 style="color: var(--blue); margin:0 0 5px;">Media Hub</h3>
+        <p style="color: var(--muted); margin:0 0 20px; font-size:0.9em;">Upload MP3 or MP4 files for processing</p>
+        
+        <div class= "two_column_grid" style= "grid-template-columns:2fr 1fr; align-items:end;">
+
+            <div>
+                <label class = "label">Choose File</label>
+                <input type= "file" id="fileInput"    accept="audio/mp3,video/mp4">
+            </div>
+
+            <div>
+                <label class="label">Target Language</label>
+                <select id= "mediaLanguagePreference">
+                    <option value="zu">isiZulu</option>
+                    <option value="xh">isiXhosa</option>
+                    <option value="af">Afrikaans</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+
+        <button class= "action_button action_button_green" style="margin-bottom:10px;" onclick="uploadMediaFile()">Process</button>
+
+  
+
+        <div class = "important_message">
+
+            <span class="icon">❗</span>
+            <div class="content">
+                <strong>Important Notice:</strong> This is a demonstration version of the media processing feature. 
+                The translation shown is based on pre-loaded sample lecture content, not the actual transcription from your uploaded file. 
+                Real speech-to-text transcription and translation capabilities for this section are <span class="coming_soon">Coming Soon</span>
+            </div>
+        </div>
+
+
+        <div id= "loadingIndicator"   class= "loading_indicator">Processing...</div>
+
+        <div class = "output_grid" style="margin-top:20px;">
+            <div class="display_box">
+                <label class= "label">English Transcription</label>
+                <div id= "mediaEnglishOutput" class= "scrollable_output" style="color:var(--muted);">No file processed yet</div>
+            </div>
+
+            <div class="display_box">
+
+                <label class = "label" style = "color:var(--blue);">Translated</label>
+                <div id= "mediaTranslatedOutput" class= "scrollable_output" style= "color: var(--blue); font-weight:bold;">...</div>
+            </div>
+
+        </div>
+
+        <div class = "action_row" style="margin-top:25px;">
+            <button class = "back_button" style="margin-top:0;" onclick="closeAllPanels()">Back</button>
+            <button class="download_button" id="mediaDownloadButton"  style="display:none;" onclick="downloadMediaOutput()">📄 Download PDF</button>
+        </div>
+    </div>
+
+</div>
+
+
+
+<div id = "helpModal" class = "help_modal">
+
+    <div class="help_modal_content">
+        <button class="help_modal_close" onclick= "closeHelpModal()">✕</button>
+        
+        <h2 style= "color:var(--blue);margin-top:0;">Help & Tutorial</h2>
+        
+        <div class = "tutorial_container">
+            <p id= "tutorialText" style= "margin:0 0 12px; font-size:0.95em; line-height: 1.6;"></p>
+
+            <div style = "display: flex; justify-content:space-between; align-items:center;">
+                <button class= "button" style="width:auto; padding:4px 10px; font-size: 0.75em;min-width: unset;" onclick="changeTutorialStep(-1)">Previous</button>
+                <button class= "button" style="width: auto; padding:4px 10px; font-size: 0.75em;background: var(--blue);color: white;min-width:unset;" onclick= "changeTutorialStep(1)">Next</button>
+            </div>
+
+            <div class="progress_dots" id="tutorialProgressDots">
+                <div class="progress_dot"></div>
+                <div class="progress_dot"></div>
+                <div class="progress_dot"></div>
+                <div class="progress_dot"></div>
+            </div>
+        </div>
+
+        <h3 style = "margin:20px 0 10px; color:var(--blue);">Common Questions</h3>
+        
+        <div class="qa_container">
+            <div class="qa_header" onclick="toggleQuestionAnswer(this)">Translation freezes? <span>▼</span></div>
+            <div class="qa_body">Check network status or switch languages to reset the connection.</div>
+        </div>
+        <div class="qa_container">
+            <div class="qa_header" onclick="toggleQuestionAnswer(this)">No TTS audio? <span>▼</span></div>
+            <div class="qa_body">Check volume and make sure 'Subtitles Only' isn't selected.</div>
+        </div>
+        <div class="qa_container">
+            <div class="qa_header" onclick="toggleQuestionAnswer(this)">Multiple students? <span>▼</span></div>
+            <div class="qa_body">Yes, the system supports many users with different languages simultaneously.</div>
+        </div>
+        
+        <button class="button" style="width: auto; padding: 6px 15px; margin-top: 15px; background: var(--blue); color: white; min-width: unset;" onclick="closeHelpModal()">Close Help</button>
+    </div>
+</div>
+
+
+<div class= "footer">
+    <p><span class = "name">M.Raaziq Barday</span> — <span class="year">2026</span></p>
+    <p style="font-size:0.7rem; opacity:0.6;">University of the Western Cape · Department of Computer Science</p>
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+
+    let syncInterval = null;
+    let lastSpokenText = "";
+    let notificationCount = 0;
+    let transcriptHistory = [];
+    let translationHistory = [];
+    let mediaResultData =null;
+    let tutorialIndex =0;
+    let availableVoices = [];
+    let currentUtterance =null;
+    let currentLanguage = "zu";
+
+    const tutorialSteps = [
+        "Step 1: Choose your desired console from the main dashboard.",
+        "Step 2: Lecturers start broadcasting with the mic button.",
+        "Step 3: Students select their language and join the lecture session.",
+        "Step 4: Check and view notifications for system updates."
+    ];
+
+
+    function openHelpModal() 
+    {
+        document.getElementById('helpModal').classList.add('help_modal_active');
+        renderTutorial();
+        document.body.style.overflow ='hidden';
+    }
+
+    function closeHelpModal() {
+        document.getElementById('helpModal').classList.remove('help_modal_active');
+        document.body.style.overflow= '';
+    }
+
+    document.getElementById('helpModal').addEventListener('click',function(event) 
+    {
+        if(event.target===this) closeHelpModal();
+    });
+
+    document.addEventListener('keydown',function(event) {
+        if (event.key ==='Escape') closeHelpModal();
+    });
+
+
+    
+    const voiceLanguageMap ={
+        'zu': {languages:['zu-ZA','af-ZA','en-ZA'],fallback: 'af-ZA',name: 'isiZulu'},
+        'xh':{languages:['xh-ZA','af-ZA', 'en-ZA'], fallback: 'af-ZA', name: 'isiXhosa'},
+        'af':{languages: ['af-ZA', 'nl-NL', 'en-ZA'], fallback:'af-ZA', name: 'Afrikaans'},
+        'en': {languages: ['en-US', 'en-GB', 'en-ZA'], fallback: 'en-US', name: 'English'}
+    };
+
+    function loadAvailableVoices(){
+        if (window.speechSynthesis)
+         {
+            availableVoices=window.speechSynthesis.getVoices();
+            if (availableVoices.length ===0){
+                window.speechSynthesis.onvoiceschanged=function() 
+                {
+                    availableVoices =window.speechSynthesis.getVoices();
+                    updateVoiceQuality();
+                };
+            } 
+            
+            else{updateVoiceQuality();}
+        }
+    }
+
+
+    function getBestVoiceForLanguage(language){
+        if (availableVoices.length ===0) availableVoices =window.speechSynthesis.getVoices();
+        const voiceConfig=voiceLanguageMap[language] || voiceLanguageMap['en'];
+        
+        for (const languageCode of voiceConfig.languages){
+            const voice=availableVoices.find(voice => voice.lang===languageCode);
+            if (voice) return voice;
+        }
+        
+
+        const fallbackVoice =availableVoices.find(voice => voice.lang=== voiceConfig.fallback);
+        if (fallbackVoice) return fallbackVoice;
+        
+        return availableVoices[0] || null;
+    }
+
+
+
+    function updateVoiceQuality() 
+    {
+        const selectedLanguage =document.getElementById('languagePreference').value;
+        const qualityBadge=document.getElementById('voiceQualityIndicator');
+        const voiceConfig=voiceLanguageMap[selectedLanguage];
+        
+        if(!voiceConfig){
+            qualityBadge.className = 'voice_quality_badge voice_quality_bad';
+            qualityBadge.textContent =  'No Voice';
+            return;
+        }
+
+
+        const bestVoice=getBestVoiceForLanguage(selectedLanguage);
+
+        if (bestVoice) {
+            const isExactMatch =voiceConfig.languages.includes(bestVoice.lang);
+            if (isExactMatch) {
+                qualityBadge.className = 'voice_quality_badge voice_quality_good';
+                qualityBadge.textContent = `Native ${voiceConfig.name}`;
+            } else {
+                qualityBadge.className = 'voice_quality_badge voice_quality_ok';
+                qualityBadge.textContent=`${bestVoice.lang}(Fallback)`;
+            }
+
+        } else {
+            qualityBadge.className='voice_quality_badge voice_quality_bad';
+            qualityBadge.textContent='No Voice';
+        }
+
+    }
+
+
+    
+    function speakText(text,language){
+
+        const outputMode=document.getElementById('outputModeSelector').value;
+        if(outputMode ==='subs' || !text || text === '...' || text===lastSpokenText) return;
+
+
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        const bestVoice =getBestVoiceForLanguage(language);
+        if(bestVoice) {
+            utterance.voice=bestVoice;
+            utterance.lang=bestVoice.lang;
+        } 
+        
+        else {
+            utterance.lang=language;
+        }
+
+
+        utterance.volume =parseFloat(document.getElementById('volumeSlider').value);
+        utterance.rate =parseFloat(document.getElementById('rateSlider').value);
+        utterance.pitch = parseFloat(document.getElementById('pitchSlider').value);
+        currentUtterance=utterance;
+        lastSpokenText = text;
+        
+        const timestamp=new Date().toLocaleTimeString();
+        const englishText =document.getElementById('englishDisplay').innerText;
+        
+
+        transcriptHistory.push({
+            timestamp: timestamp,
+            english_text: englishText,
+            translated_text: text,
+            language: language
+        });
+        
+        translationHistory.push({
+            timestamp: timestamp,
+            english_text: englishText,
+            translated_text: text,
+            language: language
+        });
+        
+        window.speechSynthesis.speak(utterance);
+    }
+
+
+    const SpeechRecognitionAPI=window.SpeechRecognition || window.webkitSpeechRecognition;
+    let speechRecognizer =null;
+
+    if (SpeechRecognitionAPI) 
+    {
+        speechRecognizer =new SpeechRecognitionAPI();
+        speechRecognizer.continuous =true;
+        speechRecognizer.interimResults = true;
+        speechRecognizer.lang='en-US';
+
+        speechRecognizer.onresult=function(event) 
+        {
+            let finalText= '';
+            let interimText = '';
+
+            for(let index=event.resultIndex; index<event.results.length; index++){
+                if (event.results[index].isFinal){
+                    finalText+=event.results[index][0].transcript;
+                } 
+                else{
+                    interimText +=event.results[index][0].transcript;
+                }
+            }
+
+            let recognizedText= finalText || interimText;
+            if (recognizedText.trim()!==''){
+                document.getElementById('liveSpeechDisplay').innerText=recognizedText;
+                
+                fetch('/process_lecture_text',{
+                    method:'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body:JSON.stringify({ text:recognizedText,active:true })
+                }).catch(() =>{});
+                
+                updateSystemStatus(true,'Broadcasting');
+            }
+        };
+
+        speechRecognizer.onerror =function(event){
+            if (event.error==='not-allowed') {
+                addNotification('Mic access denied');
+
+            }
+        };
+    }
+
+
+    
+    function startMicrophone() {
+        if(speechRecognizer) {
+            try {
+                speechRecognizer.start();
+                addNotification('Mic started');
+                updateSystemStatus(true,'Broadcasting');
+                document.getElementById('liveSpeechDisplay').innerText ='Listening...';
+            } 
+            catch (error){
+                addNotification('Mic error');
+            }
+
+        } else {
+            alert('Speech recognition not supported. Use Chrome, Edge or Safari browser');
+        }
+    }
+
+    function stopMicrophone() {
+        if (speechRecognizer) {
+            try {
+                speechRecognizer.stop();
+                document.getElementById('liveSpeechDisplay').innerText='Microphone paused.';
+                addNotification('Mic paused');
+                updateSystemStatus(false,'Paused');
+            } 
+            catch (error){}
+        }
+    }
+
+    function openPanel(panelId) {
+        document.querySelectorAll('.panel').forEach(panel=>{
+            if (panel.id!=='settingsPanel') panel.classList.remove('panel_active');
+        });
+
+        document.getElementById(panelId).classList.add('panel_active');
+
+        if (panelId==='studentPanel') {
+            addNotification('Student mode');
+            transcriptHistory =[];
+            translationHistory = [];
+            startStudentSync();
+            updateVoiceQuality();
+
+        } else if (panelId==='lecturerPanel'){
+            addNotification('Lecturer mode');
+        } 
+        else if (panelId ==='mediaPanel') {
+            addNotification('Media mode');
+            resetMediaView();
+        }
+    }
+
+    function closeAllPanels() {
+        if (speechRecognizer) try {speechRecognizer.stop();} catch(error) {}
+        if (syncInterval) clearInterval(syncInterval);
+
+        if (window.speechSynthesis) try { window.speechSynthesis.cancel();} catch(error) {}
+        lastSpokenText ='';
+        document.getElementById('liveSpeechDisplay').innerText ='Microphone off...';
+        document.getElementById('englishDisplay').innerText='Connecting...';
+        document.getElementById('translationDisplay').innerText = '...';
+        
+        fetch('/process_lecture_text',{
+
+            method: 'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ text: 'Lecture paused.',active:false})
+        }).catch(()=>{});
+
+        addNotification('Session closed');
+        updateSystemStatus(false,'Offline');
+        openPanel('dashboardPanel');
+    }
+
+    
+    function startStudentSync() {
+        if (syncInterval) clearInterval(syncInterval);
+        syncInterval = setInterval(() =>{
+            const selectedLanguage =document.getElementById('languagePreference').value;
+            currentLanguage=selectedLanguage;
+            
+            fetch('/process_translation',{
+                method:'POST',
+                headers: {'Content-Type':'application/json'},
+                body:JSON.stringify({ lang:selectedLanguage })
+            })
+
+            .then(response=>response.json())
+            .then(data =>{
+                if (data.original_text){
+                    document.getElementById('englishDisplay').innerText=data.original_text;
+                    document.getElementById('translationDisplay').innerText = data.translated_text;
+                    
+                    if (data.is_broadcasting) {
+                        updateSystemStatus(true, 'Receiving');
+                        const outputMode =document.getElementById('outputModeSelector').value;
+                        if (outputMode !=='subs') 
+                        {
+                            if (data.translated_text !== lastSpokenText&&data.translated_text!=='...'){
+                                speakText(data.translated_text,selectedLanguage);
+                            }
+                        }
+
+                    } 
+                    else{updateSystemStatus(false,'Idle');}
+                }
+            })
+            .catch(()=>{});
+        },300);
+    }
+
+
+    
+    function updateAudioSettings(){
+        document.getElementById('volumeDisplay').innerText=Math.round(document.getElementById('volumeSlider').value*100) +'%';
+        document.getElementById('rateDisplay').innerText =document.getElementById('rateSlider').value+'x';
+        document.getElementById('pitchDisplay').innerText=document.getElementById('pitchSlider').value;
+    }
+
+
+    function replayAudio(){
+        const translatedText =document.getElementById('translationDisplay').innerText;
+        const selectedLanguage = document.getElementById('languagePreference').value;
+        if(translatedText&&translatedText!=='...' &&translatedText !=='Lecture paused.') 
+        {
+            lastSpokenText='';
+            speakText(translatedText,selectedLanguage);
+            addNotification('Replaying');
+        } else{
+            addNotification('No audio');}
+    }
+
+
+    
+    function toggleNotifications(){
+        const dropdown=document.getElementById('notificationDropdown');
+        const isHidden = window.getComputedStyle(dropdown).display ==='none';
+        
+        if (isHidden){
+            dropdown.style.display ='block';
+            notificationCount=0;
+            document.getElementById('notificationBadge').style.display='none';
+        } 
+        else{
+            dropdown.style.display='none';}
+    }
+
+    function addNotification(message){
+        const notificationList =document.getElementById('notificationList');
+        const emptyNotification=document.getElementById('emptyNotification');
+        if (emptyNotification) emptyNotification.remove();
+
+        const currentTime =new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        const notificationItem =document.createElement('div');
+        notificationItem.className='notification_item';
+        notificationItem.innerHTML=`${message} <span class="notification_time">${currentTime}</span>`;
+        
+        notificationList.insertBefore(notificationItem,notificationList.firstChild);
+        while (notificationList.children.length>20){
+            notificationList.removeChild(notificationList.lastChild);
+        }
+
+        const dropdown =document.getElementById('notificationDropdown');
+        if (window.getComputedStyle(dropdown).display ==='none'){
+            notificationCount++;
+            const badge = document.getElementById('notificationBadge');
+            badge.innerText =notificationCount;
+            badge.style.display = 'flex';
+        }
+        
+    }
+
+
+    
+    function toggleDarkMode(){
+        const body=document.body;
+        if (body.getAttribute('data-theme') ==='dark'){
+            body.removeAttribute('data-theme');
+            addNotification('Light mode');
+        } else{
+            body.setAttribute('data-theme', 'dark');
+            addNotification('Dark mode');
+        }
+    }
+
+
+    
+    function toggleSettings() {
+        document.getElementById('settingsPanel').classList.toggle('panel_active');
+    }
+
+    
+    
+    function renderTutorial(){
+        document.getElementById('tutorialText').innerText =tutorialSteps[tutorialIndex];
+        const progressDots=document.querySelectorAll('#tutorialProgressDots .progress_dot');
+        progressDots.forEach((dot,index) =>{
+            dot.classList.toggle('progress_dot_active', index===tutorialIndex);
+        });
+
+    }
+
+    function changeTutorialStep(direction){
+        tutorialIndex += direction;
+        if (tutorialIndex<0) tutorialIndex =0;
+        if (tutorialIndex >= tutorialSteps.length) tutorialIndex =tutorialSteps.length-1;
+        renderTutorial();
+    }
+
+    function toggleQuestionAnswer(headerElement) {
+        const bodyElement = headerElement.nextElementSibling;
+        bodyElement.style.display =bodyElement.style.display ==='block' ? 'none' :'block';
+    }
+
+    function changeFontSize(){
+        const selectedSize = document.getElementById('fontSizeSelector').value;
+        document.documentElement.style.setProperty('--size',selectedSize);
+        addNotification(`Font: ${selectedSize}`);
+    }
+
+    
+
+    function updateSystemStatus(isActive,statusText) {
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusLabel = document.getElementById('statusText');
+        statusLabel.innerText =statusText;
+        statusIndicator.classList.toggle('status_dot_active',isActive);
+    }
+
+    
+    
+    function downloadTranscriptPDF(){
+
+    
+        const englishDisplay=document.getElementById('englishDisplay').innerText;
+        const translationDisplay =document.getElementById('translationDisplay').innerText;
+        
+        const hasContent =englishDisplay !== 'Connecting...'&& 
+                           translationDisplay!=='...' && 
+                           translationDisplay !=='Lecture paused.'&&
+                           translationDisplay !=='No translations to download.';
+        
+        
+                           
+        if (translationHistory.length ===0 &&transcriptHistory.length ===0){
+            if (!hasContent){
+                alert('No translations to download. Please wait for translations to appear.');
+                return;
+
+            }
+            
+            
+            
+            const currentTime=new Date().toLocaleTimeString();
+            transcriptHistory.push({
+                timestamp: currentTime,english_text:englishDisplay,
+                translated_text: translationDisplay,
+                language:document.getElementById('languagePreference').value
+            });
+            
+            translationHistory.push({
+                timestamp: currentTime,
+                english_text: englishDisplay,
+                translated_text:translationDisplay,
+                language: document.getElementById('languagePreference').value
+            });
+            
+            addNotification('Created entry from current display');
+        }
+
+        const { jsPDF }=window.jspdf;
+        const doc =new jsPDF('p','mm','a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin=20;
+        let y = margin;
+
+      
+        doc.setFontSize(22);
+        doc.setTextColor(30,58,138);
+        doc.text('UWC AI Lecture Translation Report',pageWidth/2, y,{align:'center' });
+        y+=10;
+
+        doc.setFontSize(11);
+        doc.setTextColor(75,85,99);
+        const dateStr = new Date().toLocaleString();
+        doc.text(`Generated: ${dateStr}`, pageWidth/2, y,{align:'center'});
+        y+= 6;
+        
+        const languageName =document.getElementById('languagePreference').selectedOptions[0].text;
+        doc.text(`Target Language: ${languageName}`,pageWidth/2, y,{align:'center'});
+        y +=8;
+
+
+        
+        const totalEntries = translationHistory.length>0 ?translationHistory.length:transcriptHistory.length;
+        doc.text(`Total Translation Segments: ${totalEntries}`, pageWidth /2, y, { align: 'center' });
+        y+=10;
+
+        doc.setDrawColor(30,58,138);
+        doc.line(margin, y,pageWidth-margin,y);
+        y +=12;
+
+   
+        
+        let historyToUse=[];
+        
+        if (transcriptHistory.length >0 &&translationHistory.length>0){
+           
+            
+            const maxLength=Math.max(transcriptHistory.length,translationHistory.length);
+            for (let i=0; i<maxLength; i++){
+                const engEntry = transcriptHistory[i] || {timestamp:new Date().toLocaleTimeString(),english_text: '' };
+                const transEntry =translationHistory[i] || { timestamp: new Date().toLocaleTimeString(),translated_text: '' };
+                
+                let englishText = '';
+                let translatedText ='';
+
+                let timestamp=new Date().toLocaleTimeString();
+                
+                if (typeof engEntry ==='string') 
+                {
+                    const match =engEntry.match(/\[(.*?)\]\s*(.*)/);
+                    if (match) {
+                        timestamp=match[1];
+                        englishText=match[2];
+                    } else{
+                        englishText= engEntry;
+                    }
+                } else if (typeof engEntry ==='object') {
+                    timestamp = engEntry.timestamp || new Date().toLocaleTimeString();
+                    englishText = engEntry.english_text || engEntry.translated_text || '';
+                }
+
+                
+                if (typeof transEntry ==='string') {
+                    const match =transEntry.match(/\[(.*?)\]\s*(.*)/);
+                    if (match) {
+                        timestamp=match[1];
+                        translatedText = match[2];
+                    } else{
+                        translatedText=transEntry;
+                    }
+
+
+                } else if (typeof transEntry==='object')    {
+                    timestamp =transEntry.timestamp || new Date().toLocaleTimeString();
+                    translatedText=transEntry.translated_text || transEntry.english_text || '';
+                }
+
+
+                
+                historyToUse.push({
+                    timestamp: timestamp,
+                    english_text:englishText || 'N/A', translated_text:translatedText || 'N/A'
+                });
+            }
+
+        } else if (translationHistory.length>0) {
+            historyToUse=translationHistory.map(entry=> 
+            
+            {
+                if (typeof entry==='string') {
+                    const match =entry.match(/\[(.*?)\]\s*(.*)/);
+                    return {
+                        timestamp: match ? match[1] : new Date().toLocaleTimeString(),
+                        english_text:'N/A',
+                        translated_text: match ? match[2] : entry
+                    };
+                } else {
+                    return {
+                        timestamp: entry.timestamp || new Date().toLocaleTimeString(),
+                        english_text: entry.english_text || 'N/A',
+                        translated_text:entry.translated_text || entry.english_text || 'N/A'
+                    };
+                }
+
+
+            });
+        } 
+        
+        else if (transcriptHistory.length>0) {
+            historyToUse=transcriptHistory.map(entry=>{
+                if (typeof entry === 'string') {
+                    const match =entry.match(/\[(.*?)\]\s*(.*)/);
+                    return {
+                        timestamp: match ?match[1] : new Date().toLocaleTimeString(),
+                        english_text: match ? match[2]:entry,
+                        translated_text: 'N/A'
+                    };
+
+                } else{
+                    return{
+                        timestamp: entry.timestamp || new Date().toLocaleTimeString(),
+                        english_text:entry.english_text || entry.translated_text || 'N/A',
+                        translated_text: 'N/A'
+                    };
+                }
+
+            });
+
+
+        }
+
+        
+        
+        if (historyToUse.length >0){
+            let entryCount=0;
+            for (const entry of historyToUse){
+            
+                
+                if (y >250)   {
+                    doc.addPage();
+                    y=margin;
+                    
+                    doc.setFontSize(12);
+                    doc.setTextColor(30,58, 138);
+                    doc.text('UWC AI Lecture Translation Report (continued)', pageWidth/2, y, {align:'center' });
+                    y +=10;
+                    doc.setDrawColor(30, 58,138);
+                    doc.line(margin,y,pageWidth -margin, y);
+                    y += 8;
+                }
+                
+                
+                
+                entryCount++;
+                doc.setFontSize(11);
+                doc.setTextColor(30,58,138);
+                doc.text(`Entry ${entryCount}`,margin, y);
+                y +=5;
+                
+                doc.setFontSize(9);
+                doc.setTextColor(156,163,175);
+                doc.text(`[${entry.timestamp}]`,margin+30,   y);
+                y +=6;
+                
+                
+                
+                doc.setFontSize(10);
+                doc.setTextColor(31, 41,55);
+                doc.text('English:',margin,y);
+                y+=4;
+                doc.setFontSize(9);
+                doc.setTextColor(75, 85,99);
+                const engLines =doc.splitTextToSize(entry.english_text,pageWidth-margin *2 -20);
+                
+                for (const line of engLines){
+                    if (y>250) 
+                    {
+                        doc.addPage();
+                        y =margin;
+                    }
+                    doc.text(line, margin+15,y);
+                    y+=4;}
+                y+=2;
+                
+              
+                
+                doc.setFontSize(10);
+                doc.setTextColor(30,58,138);
+                doc.text('Translated:',margin,y);
+                y+= 4;
+                
+                doc.setFontSize(9);
+                doc.setTextColor(59,130,246);
+                const transLines= doc.splitTextToSize(entry.translated_text, pageWidth-margin*2 -20);
+                
+                for (const line of transLines){
+                    if (y>250) {
+                        doc.addPage();
+                        y = margin;
+                    }
+                    doc.text(line, margin+15, y);
+                    y +=4;
+                }
+                y+=4;
+                
+                
+                
+                doc.setDrawColor(220, 220,220);
+                doc.line(margin, y, pageWidth-margin, y);
+                y+=8;
+            }
+
+
+        } else{
+            
+            if (hasContent){
+                doc.setFontSize(11);
+                doc.setTextColor(30,58,138);
+                doc.text('English (Original):',margin,y);
+                y += 6;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(31,41,55);
+                const engLines =doc.splitTextToSize(englishDisplay, pageWidth - margin*2);
+                for (const line of engLines){
+                    if (y>270) 
+                    {
+                        doc.addPage();
+                        y=margin;
+                    }
+
+                    doc.text(line, margin+5, y);
+                    y += 5;}
+                y+=8;
+                
+                
+
+                doc.setFontSize(11);
+                doc.setTextColor(30, 58, 138);
+                doc.text('Translated:',margin, y);
+                y += 6;
+                
+                doc.setFontSize(10);
+                doc.setTextColor(59,130,246);
+                const transLines =doc.splitTextToSize(translationDisplay, pageWidth-margin*2);
+                for (const line of transLines){
+                    if (y >270){
+                        doc.addPage();
+                        y =margin;
+                    }
+                    doc.text(line, margin+5, y);
+                    y += 5;
+                }
+
+
+            } else {
+                doc.setFontSize(12);
+                doc.setTextColor(156,163,175);
+                doc.text('No translation data available.', pageWidth/2, y, {align:'center' });
+            }
+
+        }
+
+      
+        doc.setFontSize(9);
+        doc.setTextColor(156,163,175);
+        const footerText = 'University of the Western Cape · Department of Computer Science';
+        doc.text(footerText, pageWidth/2, 285, {align:'center'});
+        doc.text(`Report ID: ${Date.now()}`, pageWidth/2, 290, {align:'center' });
+        doc.save(`lecture_translation_report_${Date.now()}.pdf`);
+        addNotification(`PDF downloaded with ${historyToUse.length || 1} translation segments!`);
+    }
+
+    
+
+    function uploadMediaFile() {
+        const fileInput=document.getElementById('fileInput');
+        const selectedLanguage =document.getElementById('mediaLanguagePreference').value;
+        const file=fileInput.files[0];
+
+        if (!file){
+            alert('Select a file first');
+            return;}
+
+        const formData =new FormData();
+        formData.append('file', file);
+        formData.append('lang',selectedLanguage);
+        document.getElementById('loadingIndicator').style.display='block';
+
+        fetch('/process_media',{
+            method:'POST',
+            body:formData
+        })
+        .then(response =>response.json())
+        .then(data =>{
+            document.getElementById('loadingIndicator').style.display ='none';
+            if (data.error) {
+                alert('Error: '+data.error);
+                addNotification('⚠️ ' +data.error);
+            } 
+            
+            else{
+                mediaResultData =data;
+                document.getElementById('mediaEnglishOutput').innerText =data.english_text;
+                document.getElementById('mediaTranslatedOutput').innerText = data.translated_text;
+                document.getElementById('mediaDownloadButton').style.display = 'flex';
+                addNotification('Processed: ' + data.filename);
+            }
+        })
+        .catch(error=>{
+            document.getElementById('loadingIndicator').style.display ='none';
+            alert('Upload failed. Check server.');
+            addNotification('Upload failed');
+        });
+    }
+
+    function resetMediaView(){
+        document.getElementById('fileInput').value = '';
+        document.getElementById('mediaEnglishOutput').innerText ='No file processed yet';
+        document.getElementById('mediaTranslatedOutput').innerText = '...';
+        document.getElementById('mediaDownloadButton').style.display ='none';
+        mediaResultData=null;
+    }
+
+
+    function downloadMediaOutput(){
+        if(!mediaResultData) return;
+        
+        const {jsPDF} =window.jspdf;
+        const doc = new jsPDF('p','mm','a4');
+        const pageWidth =doc.internal.pageSize.getWidth();
+        const margin=20;
+        let y=margin;
+        doc.setFontSize(18);
+        doc.setTextColor(30,58,138);
+        doc.text('UWC AI Media Processing Report', pageWidth/2, y,{align:'center'});
+        y+=10;
+
+        doc.setFontSize(10);
+        doc.setTextColor(75,85,99);
+        doc.text(`File: ${mediaResultData.filename}`, pageWidth/2, y, {align:'center' });
+        y+=8;
+        doc.text(`Processed: ${new Date().toLocaleString()}`,pageWidth/2, y,{align:'center' });
+        y+=8;
+
+        doc.setDrawColor(30,58, 138);
+        doc.line(margin, y, pageWidth-margin,y);
+        y+=10;
+
+        doc.setFontSize(14);
+        doc.setTextColor(30,58,138);
+        doc.text('English Transcription', margin,y);
+        y+=6;
+
+        doc.setFontSize(10);
+        doc.setTextColor(31,41,55);
+        const engLines =doc.splitTextToSize(mediaResultData.english_text, pageWidth-margin *2);
+        for (const line of engLines) {
+            if (y>260) {
+                doc.addPage();
+                y =margin;
+            }
+            doc.text(line,margin,y);
+            y +=5;
+        }
+
+        y +=8;
+
+  
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin,y,pageWidth - margin,y);
+        y+=10;
+
+
+        
+        doc.setFontSize(14);
+        doc.setTextColor(30,58,138);
+        doc.text('Translated Text', margin,y);
+        y +=6;
+
+        doc.setFontSize(10);
+        doc.setTextColor(31, 41,55);
+        const transLines=doc.splitTextToSize(mediaResultData.translated_text,pageWidth-margin*2);
+        for (const line of transLines){
+            if (y>260) {
+                doc.addPage();
+                y =margin;
+            }
+            doc.text(line, margin, y);
+            y+=5;
+        }
+
+
+        doc.setFontSize(9);
+        doc.setTextColor(156,163,175);
+        const footerText = 'University of the Western Cape · Department of Computer Science';
+        doc.text(footerText, pageWidth/2,285, {align: 'center'});
+
+        doc.save(`media_processing_report_${Date.now()}.pdf`);
+        addNotification('PDF downloaded');
+    }
+
+    
+    document.addEventListener('DOMContentLoaded',function() {
+        loadAvailableVoices();
+        updateAudioSettings();
+        renderTutorial();
+        
+        if (!window.speechSynthesis){
+            addNotification('TTS not supported');
+        }
+        
+        setTimeout(()=>{
+            availableVoices =window.speechSynthesis.getVoices();
+            updateVoiceQuality();
+        }, 1000);
+    });
+
+    if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = function() {
+            availableVoices =window.speechSynthesis.getVoices();
+            updateVoiceQuality();
+        };
+
+
+    }
+
+
+    console.log('System loaded');
+</script>
+
+
+</body>
+</html>
